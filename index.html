@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Словник</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #ccc;
+            background-color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .search-container input {
+            padding: 5px 25px 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .search-container .search-icon {
+            position: absolute;
+            right: 8px;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .container {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .column {
+            flex: 1;
+            text-align: center;
+        }
+
+        .column h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .word {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #addWordButton {
+            margin-top: 20px;
+            align-self: center;
+        }
+
+        @keyframes glow {
+            0% {
+                background-color: rgb(246, 162, 6);
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        .highlight {
+            animation: glow 2s ease-out;
+        }
+
+        .active {
+            background-color: #28a745 !important;
+        }
+
+        @media (max-width: 600px) {
+            .row {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+
+            .column {
+                width: 48%;
+            }
+        }
+    </style>
+    <!-- Підключення manifest.json -->
+    <link rel="manifest" href="/Dictionary/manifest.json">
+
+    <!-- Підключення Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/Dictionary/sw.js')
+                .then((registration) => {
+                    console.log('Service Worker зареєстровано:', registration);
+                })
+                .catch((error) => {
+                    console.error('Помилка реєстрації Service Worker:', error);
+                });
+        }
+    </script>
+</head>
+
+<body>
+    <header>
+        <button id="editButton">Редагування</button>
+        <div class="title">Словник</div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Уведіть слово">
+            <span class="search-icon">🔍</span>
+        </div>
+    </header>
+    <div class="container" id="wordContainer">
+        <div class="row">
+            <div class="column">
+                <h2>Іспанська</h2>
+                <input type="text" class="word" placeholder="Введіть слово" data-lang="es" inputmode="text" readonly>
+            </div>
+            <div class="column">
+                <h2>Українська</h2>
+                <input type="text" class="word" placeholder="Переклад слова" data-lang="uk" inputmode="text" readonly>
+            </div>
+        </div>
+    </div>
+    <button id="addWordButton">Додати слово</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const wordContainer = document.getElementById('wordContainer');
+            const addWordButton = document.getElementById('addWordButton');
+            const editButton = document.getElementById('editButton');
+            const searchInput = document.getElementById('searchInput');
+            let isEditing = false;
+
+            // Toggle editing mode
+            editButton.addEventListener('click', () => {
+                isEditing = !isEditing;
+                editButton.classList.toggle('active', isEditing);
+                editButton.textContent = isEditing ? 'Зберегти' : 'Редагування';
+                const inputs = document.querySelectorAll('.word');
+                inputs.forEach(input => input.readOnly = !isEditing);
+            });
+
+            const saveWords = () => {
+                const words = [];
+                document.querySelectorAll('.row').forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    words.push({ es: inputs[0].value, uk: inputs[1].value });
+                });
+                localStorage.setItem('words', JSON.stringify(words));
+            };
+
+            // Function to save and load words from localStorage
+            const syncWithLocalStorage = () => {
+                const rows = document.querySelectorAll('.row');
+                rows.forEach((row, index) => {
+                    const inputs = row.querySelectorAll('input');
+                    inputs.forEach(input => {
+                        const lang = input.dataset.lang;
+                        const savedValue = localStorage.getItem(`${lang}-${index}`);
+                        if (savedValue) {
+                            input.value = savedValue;
+                        }
+
+                        input.addEventListener('input', () => {
+                            localStorage.setItem(`${lang}-${index}`, input.value);
+                        });
+                    });
+                });
+            };
+
+            // Function to add a new row
+            const addNewRow = (es = '', uk = '') => {
+                const row = document.createElement('div');
+                row.classList.add('row');
+                row.innerHTML = `
+                    <div class="column">
+                        <input type="text" class="word" placeholder="Введіть слово" data-lang="es" ${isEditing ? '' : 'readonly'} inputmode="text">
+                    </div>
+                    <div class="column">
+                        <input type="text" class="word" placeholder="Переклад слова" data-lang="uk" ${isEditing ? '' : 'readonly'} inputmode="text">
+                    </div>
+                `;
+                wordContainer.appendChild(row);
+                syncWithLocalStorage();
+            };
+
+            // Add event listener to the "Додати слово" button
+            addWordButton.addEventListener('click', () => {
+                addNewRow();
+            });
+
+            addWordButton.addEventListener('click', () => addNewRow());
+
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const searchValue = searchInput.value.trim().toLowerCase();
+                    const rows = document.querySelectorAll('.row');
+                    rows.forEach(row => {
+                        const inputs = row.querySelectorAll('input');
+                        if (inputs[0].value.toLowerCase() === searchValue || inputs[1].value.toLowerCase() === searchValue) {
+                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            inputs.forEach(input => {
+                                input.classList.add('highlight');
+                                setTimeout(() => input.classList.remove('highlight'), 2000);
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Load rows on startup from localStorage
+            const loadFromLocalStorage = () => {
+                const maxIndex = Math.max(
+                    ...Object.keys(localStorage)
+                        .filter(key => key.includes('-'))
+                        .map(key => parseInt(key.split('-')[1])),
+                    -1
+                );
+
+                for (let i = 0; i <= maxIndex; i++) {
+                    addNewRow();
+                }
+
+                syncWithLocalStorage();
+            };
+
+            // Initial setup
+            loadFromLocalStorage();
+
+            // Add click event to word inputs
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('word')) {
+                    const input = e.target;
+                    if (isEditing || input.value === '') {
+                        input.readOnly = false;
+                        input.focus();
+                    } else {
+                        input.readOnly = true; // Заборона редагування, якщо не порожня і не режим редагування
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
