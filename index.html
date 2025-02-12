@@ -146,12 +146,12 @@
         }
     </style>
     <!-- Підключення manifest.json -->
-    <link rel="manifest" href="/Dictionary/manifest.json">
+    <link rel="manifest" href="/manifest.json">
 
     <!-- Підключення Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/Dictionary/sw.js')
+            navigator.serviceWorker.register('/sw.js')
                 .then((registration) => {
                     console.log('Service Worker зареєстровано:', registration);
                 })
