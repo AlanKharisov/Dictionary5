@@ -145,10 +145,8 @@
             }
         }
     </style>
-    <!-- Підключення manifest.json -->
     <link rel="manifest" href="/manifest.json">
 
-    <!-- Підключення Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js')
@@ -159,6 +157,92 @@
                     console.error('Помилка реєстрації Service Worker:', error);
                 });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const wordContainer = document.getElementById('wordContainer');
+            const addWordButton = document.getElementById('addWordButton');
+            const editButton = document.getElementById('editButton');
+            const searchInput = document.getElementById('searchInput');
+            let isEditing = false;
+
+            // Toggle режим редактирования
+            editButton.addEventListener('click', () => {
+                isEditing = !isEditing;
+                editButton.classList.toggle('active', isEditing);
+                editButton.textContent = isEditing ? 'Зберегти' : 'Редагування';
+                const inputs = document.querySelectorAll('.word');
+                inputs.forEach(input => {
+                    if (isEditing) {
+                        input.removeAttribute('readonly');
+                    } else {
+                        input.setAttribute('readonly', true);
+                    }
+                });
+            });
+
+            const saveWords = () => {
+                const words = [];
+                document.querySelectorAll('.row').forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    words.push({ es: inputs[0].value, uk: inputs[1].value });
+                });
+                localStorage.setItem('words', JSON.stringify(words));
+            };
+
+            // Функция для добавления новой строки
+            const addNewRow = (es = '', uk = '') => {
+                const row = document.createElement('div');
+                row.classList.add('row');
+                row.innerHTML = `
+                    <div class="column">
+                        <input type="text" class="word" placeholder="Введіть слово" data-lang="es" ${isEditing ? '' : 'readonly'} inputmode="text">
+                    </div>
+                    <div class="column">
+                        <input type="text" class="word" placeholder="Переклад слова" data-lang="uk" ${isEditing ? '' : 'readonly'} inputmode="text">
+                    </div>
+                `;
+                wordContainer.appendChild(row);
+            };
+
+            // Добавить событие на кнопку добавления
+            addWordButton.addEventListener('click', () => {
+                addNewRow();
+            });
+
+            // Поиск по введенному слову
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const searchValue = searchInput.value.trim().toLowerCase();
+                    const rows = document.querySelectorAll('.row');
+                    rows.forEach(row => {
+                        const inputs = row.querySelectorAll('input');
+                        if (inputs[0].value.toLowerCase() === searchValue || inputs[1].value.toLowerCase() === searchValue) {
+                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            inputs.forEach(input => {
+                                input.classList.add('highlight');
+                                setTimeout(() => input.classList.remove('highlight'), 10);
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Инициализация
+            const loadFromLocalStorage = () => {
+                const maxIndex = Math.max(
+                    ...Object.keys(localStorage)
+                        .filter(key => key.includes('-'))
+                        .map(key => parseInt(key.split('-')[1])),
+                    -1
+                );
+
+                for (let i = 0; i <= maxIndex; i++) {
+                    addNewRow();
+                }
+            };
+
+            loadFromLocalStorage();
+        });
     </script>
 </head>
 
@@ -184,125 +268,6 @@
         </div>
     </div>
     <button id="addWordButton">Додати слово</button>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const wordContainer = document.getElementById('wordContainer');
-            const addWordButton = document.getElementById('addWordButton');
-            const editButton = document.getElementById('editButton');
-            const searchInput = document.getElementById('searchInput');
-            let isEditing = false;
-
-            // Toggle editing mode
-            editButton.addEventListener('click', () => {
-                isEditing = !isEditing;
-                editButton.classList.toggle('active', isEditing);
-                editButton.textContent = isEditing ? 'Зберегти' : 'Редагування';
-                const inputs = document.querySelectorAll('.word');
-                inputs.forEach(input => input.readOnly = !isEditing);
-            });
-
-            const saveWords = () => {
-                const words = [];
-                document.querySelectorAll('.row').forEach(row => {
-                    const inputs = row.querySelectorAll('input');
-                    words.push({ es: inputs[0].value, uk: inputs[1].value });
-                });
-                localStorage.setItem('words', JSON.stringify(words));
-            };
-
-            // Function to save and load words from localStorage
-            const syncWithLocalStorage = () => {
-                const rows = document.querySelectorAll('.row');
-                rows.forEach((row, index) => {
-                    const inputs = row.querySelectorAll('input');
-                    inputs.forEach(input => {
-                        const lang = input.dataset.lang;
-                        const savedValue = localStorage.getItem(`${lang}-${index}`);
-                        if (savedValue) {
-                            input.value = savedValue;
-                        }
-
-                        input.addEventListener('input', () => {
-                            localStorage.setItem(`${lang}-${index}`, input.value);
-                        });
-                    });
-                });
-            };
-
-            // Function to add a new row
-            const addNewRow = (es = '', uk = '') => {
-                const row = document.createElement('div');
-                row.classList.add('row');
-                row.innerHTML = `
-                    <div class="column">
-                        <input type="text" class="word" placeholder="Введіть слово" data-lang="es" ${isEditing ? '' : 'readonly'} inputmode="text">
-                    </div>
-                    <div class="column">
-                        <input type="text" class="word" placeholder="Переклад слова" data-lang="uk" ${isEditing ? '' : 'readonly'} inputmode="text">
-                    </div>
-                `;
-                wordContainer.appendChild(row);
-                syncWithLocalStorage();
-            };
-
-            // Add event listener to the "Додати слово" button
-            addWordButton.addEventListener('click', () => {
-                addNewRow();
-            });
-
-            addWordButton.addEventListener('click', () => addNewRow());
-
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const searchValue = searchInput.value.trim().toLowerCase();
-                    const rows = document.querySelectorAll('.row');
-                    rows.forEach(row => {
-                        const inputs = row.querySelectorAll('input');
-                        if (inputs[0].value.toLowerCase() === searchValue || inputs[1].value.toLowerCase() === searchValue) {
-                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            inputs.forEach(input => {
-                                input.classList.add('highlight');
-                                setTimeout(() => input.classList.remove('highlight'), 10);
-                            });
-                        }
-                    });
-                }
-            });
-
-            // Load rows on startup from localStorage
-            const loadFromLocalStorage = () => {
-                const maxIndex = Math.max(
-                    ...Object.keys(localStorage)
-                        .filter(key => key.includes('-'))
-                        .map(key => parseInt(key.split('-')[1])),
-                    -1
-                );
-
-                for (let i = 0; i <= maxIndex; i++) {
-                    addNewRow();
-                }
-
-                syncWithLocalStorage();
-            };
-
-            // Initial setup
-            loadFromLocalStorage();
-
-            // Add click event to word inputs
-            document.addEventListener('click', (e) => {
-                if (e.target.classList.contains('word')) {
-                    const input = e.target;
-                    if (isEditing || input.value === '') {
-                        input.readOnly = false;
-                        input.focus();
-                    } else {
-                        input.readOnly = true; // Заборона редагування, якщо не порожня і не режим редагування
-                    }
-                }
-            });
-        });
-    </script>
 </body>
 
 </html>
