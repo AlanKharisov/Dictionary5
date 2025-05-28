@@ -1,1082 +1,1710 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кулінарна книга</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>BeautyCRM - Система управління салоном краси</title>
     <style>
         :root {
-            --primary-color: #4CAF50;
-            --secondary-color: #45a049;
-            --accent-color: #ff9800;
-            --text-color: #333;
-            --light-gray: #f5f5f5;
-            --medium-gray: #e0e0e0;
-            --dark-gray: #757575;
-            --error-color: #f44336;
-            --shadow: 0 2px 5px rgba(0,0,0,0.1);
-            --border-radius: 12px;
+            --primary-color: #a56cc1;
+            --secondary-color: #6c5ce7;
+            --accent-color: #f8a5c2;
+            --light-color: #f7f1e3;
+            --dark-color: #2d3436;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f9f9f9;
-            color: var(--text-color);
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark-color);
             line-height: 1.6;
         }
-        
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Сайдбар */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 0;
+            transition: all 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h2 i {
+            color: var(--accent-color);
+        }
+
+        .nav-menu {
+            margin-top: 20px;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .nav-item i {
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            margin: 20px;
+            box-shadow: var(--box-shadow);
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: white;
-            padding: 15px;
-            border-bottom: 1px solid var(--medium-gray);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
         }
-        
+
         .header h1 {
-            flex-grow: 1;
-            text-align: center;
-            margin: 0;
-            font-size: 1.5rem;
             color: var(--primary-color);
         }
-        
-        .header button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            padding: 10px 15px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 80px;
-            margin: 0 5px;
-            box-shadow: var(--shadow);
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .header button:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-        
-        .main {
-            padding: 15px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        /* Кнопки для мобильных */
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-        
-        .btn:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background-color: var(--medium-gray);
-            color: var(--text-color);
-        }
-        
-        .btn-secondary:hover {
-            background-color: #d0d0d0;
-        }
-        
-        .btn-accent {
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             background-color: var(--accent-color);
-        }
-        
-        .btn-accent:hover {
-            background-color: #e68a00;
-        }
-        
-        .btn-small {
-            padding: 8px 12px;
-            font-size: 0.9rem;
-            display: inline-block;
-            width: auto;
-        }
-        
-        .category {
-            margin-bottom: 15px;
-            background-color: white;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-        
-        .category-header {
             display: flex;
             align-items: center;
-            padding: 15px;
-            cursor: pointer;
-        }
-        
-        .category-name {
-            flex-grow: 1;
+            justify-content: center;
+            color: white;
             font-weight: bold;
-            font-size: 1.2rem;
         }
-        
-        .category-actions {
+
+        /* Dashboard */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .stat-card h3 {
+            color: var(--dark-color);
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .quick-actions {
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            margin-bottom: 30px;
         }
-        
-        .dishes {
-            display: none;
-            padding: 0 15px 15px;
-            background-color: var(--light-gray);
-        }
-        
-        .dish {
-            padding: 12px;
-            margin: 8px 0;
-            background-color: white;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            box-shadow: var(--shadow);
-        }
-        
-        .dish-name {
-            flex-grow: 1;
-            font-size: 1.1rem;
-        }
-        
-        .dish-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .action-icon {
-            width: 24px;
-            height: 24px;
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            transition: transform 0.2s;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        
-        .action-icon:hover {
-            transform: scale(1.1);
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
         }
-        
-        .add-dish-button {
-            margin-top: 10px;
+
+        .btn-primary:hover {
+            background-color: #8e44ad;
         }
-        
+
+        .btn-secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e0d6c2;
+        }
+
+        /* Таблицы */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: var(--light-color);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background-color: rgba(253, 203, 110, 0.2);
+            color: #e17055;
+        }
+
+        .status-completed {
+            background-color: rgba(0, 184, 148, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-no-show {
+            background-color: rgba(214, 48, 49, 0.2);
+            color: var(--danger-color);
+        }
+
         /* Формы */
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        
-        .form-label {
+
+        label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
-        
-        .form-input {
+
+        input, select {
             width: 100%;
-            padding: 12px;
-            border: 1px solid var(--medium-gray);
+            padding: 10px 15px;
+            border: 1px solid #ddd;
             border-radius: var(--border-radius);
-            font-size: 1rem;
+            font-size: 16px;
         }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
-        }
-        
-        /* Ингредиенты */
-        .ingredient-list {
-            margin-top: 20px;
-        }
-        
-        .ingredient-item {
-            padding: 12px;
-            margin-bottom: 10px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-        }
-        
-        .ingredient-main {
+
+        .form-row {
             display: flex;
-            align-items: center;
-            margin-bottom: 5px;
+            gap: 20px;
         }
-        
-        .ingredient-text {
-            flex-grow: 1;
+
+        .form-row .form-group {
+            flex: 1;
         }
-        
-        .ingredient-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .ingredient-description {
-            padding-left: 10px;
-            color: var(--dark-gray);
-            font-style: italic;
-            border-left: 3px solid var(--medium-gray);
-            margin-top: 5px;
-        }
-        
-        /* Поиск */
-        #ingredient-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 15px 0;
-        }
-        
-        .ingredient-tag {
-            background-color: var(--light-gray);
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .ingredient-tag:hover {
-            background-color: var(--medium-gray);
-        }
-        
-        .ingredient-tag.selected {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .search-results {
-            margin-top: 20px;
-        }
-        
-        .search-result-item {
-            padding: 12px;
-            margin-bottom: 10px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-        }
-        
-        /* Auth Form Styles */
-        .auth-form {
+
+        /* Модальные окна */
+        .modal {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
         }
-        
-        .auth-form .form-container {
+
+        .modal-content {
             background-color: white;
-            padding: 25px;
             border-radius: var(--border-radius);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             width: 90%;
-            max-width: 400px;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: modalFadeIn 0.3s;
         }
-        
-        .auth-form h3 {
-            margin-top: 0;
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
             color: var(--primary-color);
-            text-align: center;
         }
-        
-        .auth-form .error-message {
-            color: var(--error-color);
-            margin-bottom: 15px;
-            text-align: center;
+
+        .modal-body {
+            padding: 20px;
         }
-        
-        .auth-form .switch-form {
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .close-btn {
             background: none;
             border: none;
-            color: var(--primary-color);
-            text-decoration: underline;
+            font-size: 24px;
             cursor: pointer;
-            font-size: 1rem;
-            margin-top: 10px;
-            display: block;
-            width: 100%;
-            padding: 0;
+            color: #999;
         }
-        
-        /* Адаптация для маленьких экранов */
-        @media (max-width: 480px) {
-            .header {
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
                 flex-direction: column;
-                padding: 10px;
             }
-            
-            .header h1 {
-                margin-bottom: 10px;
-            }
-            
-            .header button {
-                margin: 5px 0;
+
+            .sidebar {
                 width: 100%;
+                height: auto;
             }
-            
-            .category-header {
+
+            .main-content {
+                margin: 10px;
+            }
+
+            .form-row {
                 flex-direction: column;
-                align-items: flex-start;
+                gap: 0;
             }
-            
-            .category-actions {
-                margin-top: 10px;
-                width: 100%;
-                justify-content: flex-end;
+
+            .quick-actions {
+                flex-direction: column;
             }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="header">
-        <button id="authButton" onclick="showAuthMenu()">Увійти</button>
-        <button onclick="toggleVisibility('add-menu')">Додати категорію</button>
-        <button id="searchIcon" class="search-icon">🔍 Пошук</button>
-    </div>
-
-    <div id="main-menu" class="main">
-        <h2>Категорії страв</h2>
-        <div id="categories"></div>
-    </div>
-
-    <div id="add-menu" class="main">
-        <button class="btn btn-secondary" onclick="goBack()">⬅ Назад</button>
-        <h2>Що хочете додати?</h2>
-        <button class="btn" onclick="addCategory()">Додати категорію</button>
-    </div>
-
-    <div id="category-menu" class="main">
-        <button class="btn btn-secondary" onclick="goBack()">⬅ Назад</button>
-        <h2 id="category-title"></h2>
-        <div id="category-dishes"></div>
-    </div>
-
-    <div id="recipe-menu" class="main">
-        <button class="btn btn-secondary" onclick="goBack()">⬅ Назад</button>
-        <h2 id="recipe-title">Назва страви</h2>
-        
-        <div class="form-group">
-            <label class="form-label" for="ingredient-name">Інгредієнт</label>
-            <input class="form-input" type="text" id="ingredient-name" placeholder="Назва інгредієнта">
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="ingredient-quantity">Кількість</label>
-            <input class="form-input" type="text" id="ingredient-quantity" placeholder="Грами, мл, шт...">
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="ingredient-description">Опис (необов'язково)</label>
-            <input class="form-input" type="text" id="ingredient-description" placeholder="Спосіб приготування, особливості...">
-        </div>
-        
-        <button class="btn" onclick="addIngredient()">Додати інгредієнт</button>
-        
-        <div id="ingredient-list" class="ingredient-list"></div>
-    </div>
-
-    <div id="search-menu" class="main">
-        <button class="btn btn-secondary" onclick="goBack()">⬅ Назад</button>
-        <h2>Пошук за інгредієнтами</h2>
-        
-        <div id="popular-ingredients">
-            <h3>Оберіть інгредієнти:</h3>
-            <div id="ingredient-tags"></div>
-        </div>
-        
-        <div id="only-ingredients" class="search-results">
-            <h3>Страви з цими інгредієнтами:</h3>
-            <div id="only-ingredients-list"></div>
-        </div>
-        
-        <div id="other-ingredients" class="search-results">
-            <h3>Інші страви з цими інгредієнтами:</h3>
-            <div id="other-ingredients-list"></div>
-        </div>
-    </div>
-
-    <!-- Auth Forms -->
-    <div id="auth-menu" class="auth-form" style="display: none;">
-        <div class="form-container">
-            <div id="login-form">
-                <h3>Увійти</h3>
-                <div id="login-error" class="error-message"></div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="login-email">Email</label>
-                    <input class="form-input" type="email" id="login-email" placeholder="Ваш email">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="login-password">Пароль</label>
-                    <input class="form-input" type="password" id="login-password" placeholder="Ваш пароль">
-                </div>
-                
-                <button class="btn" onclick="login()">Увійти</button>
-                <button class="switch-form" onclick="showRegisterForm()">Зареєструватися</button>
+    <div class="container">
+        <!-- Сайдбар -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-spa"></i> BeautyCRM</h2>
             </div>
-            
-            <div id="register-form" style="display: none;">
-                <h3>Реєстрація</h3>
-                <div id="register-error" class="error-message"></div>
-                
+            <div class="nav-menu">
+                <div class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-home"></i> Головна
+                </div>
+                <div class="nav-item" data-page="clients">
+                    <i class="fas fa-users"></i> Клієнти
+                </div>
+                <div class="nav-item" data-page="schedule">
+                    <i class="fas fa-calendar-alt"></i> Розклад
+                </div>
+                <div class="nav-item" data-page="services">
+                    <i class="fas fa-cut"></i> Послуги
+                </div>
+                <div class="nav-item" data-page="masters">
+                    <i class="fas fa-user-tie"></i> Майстри
+                </div>
+                <div class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i> Налаштування
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="main-content">
+            <!-- Dashboard -->
+            <div id="dashboard-page" class="page">
+                <div class="header">
+                    <h1><i class="fas fa-tachometer-alt"></i> Огляд дня</h1>
+                    <div class="user-info">
+                        <div class="user-avatar">АМ</div>
+                        <span>Адміністратор</span>
+                    </div>
+                </div>
+
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <h3>Клієнти сьогодні</h3>
+                        <div class="value" id="today-clients">12</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Дохід сьогодні</h3>
+                        <div class="value" id="today-income">8,450 ₴</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Заплановано візитів</h3>
+                        <div class="value" id="today-appointments">15</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Популярна послуга</h3>
+                        <div class="value" id="popular-service">Стрижка</div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="btn btn-primary" id="new-appointment-btn">
+                        <i class="fas fa-plus"></i> Новий запис
+                    </button>
+                    <button class="btn btn-secondary" id="new-client-btn">
+                        <i class="fas fa-user-plus"></i> Додати клієнта
+                    </button>
+                    <button class="btn btn-secondary" id="view-schedule-btn">
+                        <i class="fas fa-calendar-day"></i> Перегляд розкладу
+                    </button>
+                </div>
+
+                <h2>Сьогоднішні записи</h2>
+                <div class="table-container">
+                    <table id="today-appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Час</th>
+                                <th>Клієнт</th>
+                                <th>Майстер</th>
+                                <th>Послуга</th>
+                                <th>Статус</th>
+                                <th>Оплата</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Клиенты -->
+            <div id="clients-page" class="page" style="display: none;">
+                <div class="header">
+                    <h1><i class="fas fa-users"></i> Клієнти</h1>
+                    <button class="btn btn-primary" id="add-client-btn">
+                        <i class="fas fa-plus"></i> Додати клієнта
+                    </button>
+                </div>
+
                 <div class="form-group">
-                    <label class="form-label" for="register-name">Ім'я</label>
-                    <input class="form-input" type="text" id="register-name" placeholder="Ваше ім'я">
+                    <input type="text" id="client-search" placeholder="Пошук клієнта за ім'ям або телефоном...">
+                </div>
+
+                <div class="table-container">
+                    <table id="clients-table">
+                        <thead>
+                            <tr>
+                                <th>Ім'я</th>
+                                <th>Телефон</th>
+                                <th>Instagram</th>
+                                <th>Візитів</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Расписание -->
+            <div id="schedule-page" class="page" style="display: none;">
+                <div class="header">
+                    <h1><i class="fas fa-calendar-alt"></i> Розклад</h1>
+                    <div>
+                        <button class="btn btn-primary" id="add-schedule-btn">
+                            <i class="fas fa-plus"></i> Додати запис
+                        </button>
+                    </div>
+                </div>
+
+                <div class="schedule-controls">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="schedule-date">Дата</label>
+                            <input type="date" id="schedule-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="schedule-master">Майстер</label>
+                            <select id="schedule-master">
+                                <option value="all">Усі майстри</option>
+                                <!-- Данные будут добавлены через JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Час</th>
+                                <th>Клієнт</th>
+                                <th>Майстер</th>
+                                <th>Послуга</th>
+                                <th>Статус</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Услуги -->
+            <div id="services-page" class="page" style="display: none;">
+                <div class="header">
+                    <h1><i class="fas fa-cut"></i> Послуги</h1>
+                    <button class="btn btn-primary" id="add-service-btn">
+                        <i class="fas fa-plus"></i> Додати послугу
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table id="services-table">
+                        <thead>
+                            <tr>
+                                <th>Назва</th>
+                                <th>Тривалість</th>
+                                <th>Ціна</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Мастера -->
+            <div id="masters-page" class="page" style="display: none;">
+                <div class="header">
+                    <h1><i class="fas fa-user-tie"></i> Майстри</h1>
+                    <button class="btn btn-primary" id="add-master-btn">
+                        <i class="fas fa-plus"></i> Додати майстра
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table id="masters-table">
+                        <thead>
+                            <tr>
+                                <th>Ім'я</th>
+                                <th>Спеціалізація</th>
+                                <th>Графік</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Настройки -->
+            <div id="settings-page" class="page" style="display: none;">
+                <div class="header">
+                    <h1><i class="fas fa-cog"></i> Налаштування</h1>
+                </div>
+
+                <div class="form-group">
+                    <h3>Налаштування системи</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="business-name">Назва салону</label>
+                            <input type="text" id="business-name" placeholder="Назва вашого салону">
+                        </div>
+                        <div class="form-group">
+                            <label for="business-phone">Контактний телефон</label>
+                            <input type="tel" id="business-phone" placeholder="+380XXXXXXXXX">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Робочий час</h3>
+                    <div id="working-hours">
+                        <!-- Данные будут добавлены через JavaScript -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-primary" id="save-settings-btn">
+                        <i class="fas fa-save"></i> Зберегти налаштування
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления клиента -->
+    <div id="client-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="client-modal-title">Додати нового клієнта</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="client-name">Ім'я*</label>
+                    <input type="text" id="client-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="client-phone">Телефон*</label>
+                    <input type="tel" id="client-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="client-instagram">Instagram</label>
+                    <input type="text" id="client-instagram">
+                </div>
+                <div class="form-group">
+                    <label for="client-notes">Примітки</label>
+                    <textarea id="client-notes" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal-btn">Скасувати</button>
+                <button class="btn btn-primary" id="save-client-btn">Зберегти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления записи -->
+    <div id="appointment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Новий запис</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="appointment-client">Клієнт*</label>
+                    <select id="appointment-client" required>
+                        <option value="">Оберіть клієнта</option>
+                        <!-- Данные будут добавлены через JavaScript -->
+                    </select>
+                    <button class="btn btn-secondary" id="add-new-client-from-appointment" style="margin-top: 5px;">
+                        <i class="fas fa-user-plus"></i> Додати нового клієнта
+                    </button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="appointment-date">Дата*</label>
+                        <input type="date" id="appointment-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment-time">Час*</label>
+                        <input type="time" id="appointment-time" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="appointment-master">Майстер*</label>
+                        <select id="appointment-master" required>
+                            <option value="">Оберіть майстра</option>
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment-service">Послуга*</label>
+                        <select id="appointment-service" required>
+                            <option value="">Оберіть послугу</option>
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="appointment-notes">Примітки</label>
+                    <textarea id="appointment-notes" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal-btn">Скасувати</button>
+                <button class="btn btn-primary" id="save-appointment-btn">Зберегти запис</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для просмотра информации о клиенте -->
+    <div id="client-info-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="client-info-title">Інформація про клієнта</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="client-info-header">
+                    <div class="client-avatar" id="client-avatar">JD</div>
+                    <div class="client-main-info">
+                        <h2 id="client-info-name">John Doe</h2>
+                        <p id="client-info-phone">+380991234567</p>
+                        <p id="client-info-instagram">@johndoe</p>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label" for="register-email">Email</label>
-                    <input class="form-input" type="email" id="register-email" placeholder="Ваш email">
+                <div class="client-notes">
+                    <h4>Примітки:</h4>
+                    <p id="client-info-notes">Алергія на фарбу. Любить каву з молоком.</p>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label" for="register-password">Пароль</label>
-                    <input class="form-input" type="password" id="register-password" placeholder="Придумайте пароль">
+                <div class="client-visits">
+                    <h4>Історія візитів:</h4>
+                    <table id="client-visits-table">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Майстер</th>
+                                <th>Послуга</th>
+                                <th>Сума</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="register-confirm-password">Підтвердіть пароль</label>
-                    <input class="form-input" type="password" id="register-confirm-password" placeholder="Повторіть пароль">
-                </div>
-                
-                <button class="btn" onclick="register()">Зареєструватися</button>
-                <button class="switch-form" onclick="showLoginForm()">Вже маєте акаунт? Увійти</button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal-btn">Закрити</button>
+                <button class="btn btn-primary" id="edit-client-btn">Редагувати</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 🔥 Firebase Configuration (ЗАМЕНИТЕ НА СВОЮ!)
-        const firebaseConfig = {
-            apiKey: "AIzaSyCsi129Y9ltNjMbNPU8D9s1JURMxVyeHYs",
-            authDomain: "your-project.firebaseapp.com",
-            databaseURL: "https://notebook-66f4e-default-rtdb.firebaseio.com/",
-            projectId: "notebook-66f4e",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef1234567890"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
-
-        // App State
-        let currentUser = null;
-        let categories = [];
-        let recipes = [];
-        let popularIngredients = [];
-        let selectedIngredients = []; // для поиска
-        let currentDish = null;
-        let currentDescription = ''; // описание по умолчанию пустое
-
-        // 🔄 Load User Data from Firebase
-        function loadUserData() {
-            if (!currentUser) return;
-
-            // Load Categories
-            database.ref(`users/${currentUser.uid}/categories`).on('value', (snapshot) => {
-                const data = snapshot.val();
-                categories = data ? Object.values(data) : [];
-                renderCategories();
-            });
-
-            // Load Recipes
-            database.ref(`users/${currentUser.uid}/recipes`).on('value', (snapshot) => {
-                const data = snapshot.val();
-                recipes = data ? Object.values(data) : [];
-            });
-
-            // Load Popular Ingredients
-            database.ref(`users/${currentUser.uid}/popularIngredients`).on('value', (snapshot) => {
-                const data = snapshot.val();
-                popularIngredients = data || [];
-                renderPopularIngredients();
-            });
-        }
-
-        // 💾 Save Data to Firebase
-        function saveCategories() {
-            if (!currentUser) return;
-            database.ref(`users/${currentUser.uid}/categories`).set(categories);
-        }
-
-        function saveRecipes() {
-            if (!currentUser) return;
-            database.ref(`users/${currentUser.uid}/recipes`).set(recipes);
-        }
-
-        function savePopularIngredients() {
-            if (!currentUser) return;
-            database.ref(`users/${currentUser.uid}/popularIngredients`).set(popularIngredients);
-        }
-
-        // 🔐 Auth Functions
-        function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorElement = document.getElementById('login-error');
-
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    currentUser = userCredential.user;
-                    errorElement.textContent = '';
-                    hideAuthMenu();
-                    loadUserData();
-                    updateAuthButton();
-                })
-                .catch((error) => {
-                    errorElement.textContent = error.message;
-                });
-        }
-
-        function register() {
-            const name = document.getElementById('register-name').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const confirmPassword = document.getElementById('register-confirm-password').value;
-            const errorElement = document.getElementById('register-error');
-
-            if (password !== confirmPassword) {
-                errorElement.textContent = 'Паролі не співпадають';
-                return;
+        // Основные классы CRM
+        class Client {
+            constructor(id, name, phone, instagram = '', notes = '') {
+                this.id = id;
+                this.name = name;
+                this.phone = phone;
+                this.instagram = instagram;
+                this.notes = notes;
+                this.visits = [];
             }
 
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    currentUser = userCredential.user;
-                    return database.ref(`users/${currentUser.uid}`).set({
-                        name: name,
-                        email: email
+            addVisit(visit) {
+                this.visits.push(visit);
+            }
+
+            getClientInfo() {
+                return {
+                    id: this.id,
+                    name: this.name,
+                    phone: this.phone,
+                    instagram: this.instagram,
+                    notes: this.notes,
+                    totalVisits: this.visits.length
+                };
+            }
+        }
+
+        class Service {
+            constructor(id, name, duration, price) {
+                this.id = id;
+                this.name = name;
+                this.duration = duration; // in minutes
+                this.price = price;
+            }
+        }
+
+        class Master {
+            constructor(id, name, services = [], schedule = {}) {
+                this.id = id;
+                this.name = name;
+                this.services = services; // Array of service IDs
+                this.schedule = schedule; // {date: {time: appointment}}
+            }
+        }
+
+        class Appointment {
+            constructor(id, clientId, masterId, serviceId, date, time, notes = '', status = 'pending', paid = false) {
+                this.id = id;
+                this.clientId = clientId;
+                this.masterId = masterId;
+                this.serviceId = serviceId;
+                this.date = date;
+                this.time = time;
+                this.notes = notes;
+                this.status = status; // pending, completed, no-show
+                this.paid = paid;
+            }
+        }
+
+        // Инициализация CRM
+        class BeautyCRM {
+            constructor() {
+                this.clients = [];
+                this.services = [];
+                this.masters = [];
+                this.appointments = [];
+                this.currentUser = {
+                    id: 1,
+                    name: "Адміністратор",
+                    role: "admin"
+                };
+                this.settings = {
+                    businessName: "Beauty Salon",
+                    businessPhone: "+380991234567",
+                    workingHours: {
+                        monday: { from: "09:00", to: "20:00" },
+                        tuesday: { from: "09:00", to: "20:00" },
+                        wednesday: { from: "09:00", to: "20:00" },
+                        thursday: { from: "09:00", to: "20:00" },
+                        friday: { from: "09:00", to: "20:00" },
+                        saturday: { from: "10:00", to: "18:00" },
+                        sunday: { from: "10:00", to: "16:00" }
+                    }
+                };
+
+                // Инициализация тестовых данных
+                this.initializeSampleData();
+                this.initEventListeners();
+                this.renderDashboard();
+            }
+
+            initializeSampleData() {
+                // Добавляем услуги
+                this.services = [
+                    new Service(1, "Стрижка жіноча", 60, 500),
+                    new Service(2, "Стрижка чоловіча", 30, 300),
+                    new Service(3, "Фарбування волосся", 120, 1200),
+                    new Service(4, "Манікюр", 60, 400),
+                    new Service(5, "Педікюр", 90, 600)
+                ];
+
+                // Добавляем мастеров
+                this.masters = [
+                    new Master(1, "Анна Іванова", [1, 3], {}),
+                    new Master(2, "Марія Петренко", [1, 3, 4], {}),
+                    new Master(3, "Олег Сидоренко", [2, 5], {})
+                ];
+
+                // Добавляем клиентов
+                this.clients = [
+                    new Client(1, "Ірина Коваленко", "+380991112233", "@irina_beauty", "Алергія на фарбу"),
+                    new Client(2, "Олександр Бойко", "+380992223344", "", "Любить каву під час стрижки"),
+                    new Client(3, "Наталія Шевченко", "+380993334455", "@nata_shev", "Постійний клієнт"),
+                    new Client(4, "Вікторія Мельник", "+380994445566", "@vika_mel", ""),
+                    new Client(5, "Андрій Павленко", "+380995556677", "", "")
+                ];
+
+                // Добавляем записи
+                const today = new Date();
+                const todayStr = this.formatDate(today);
+                const tomorrow = new Date(today);
+                tomorrow.setDate(today.getDate() + 1);
+                const tomorrowStr = this.formatDate(tomorrow);
+
+                this.appointments = [
+                    new Appointment(1, 1, 1, 1, todayStr, "10:00", "", "completed", true),
+                    new Appointment(2, 2, 3, 2, todayStr, "11:00", "", "completed", true),
+                    new Appointment(3, 3, 2, 4, todayStr, "12:00", "", "completed", true),
+                    new Appointment(4, 4, 1, 3, todayStr, "14:00", "Фарба L'Oreal 7.1", "pending", false),
+                    new Appointment(5, 5, 3, 5, todayStr, "15:30", "", "pending", false),
+                    new Appointment(6, 1, 2, 1, tomorrowStr, "11:00", "", "pending", false),
+                    new Appointment(7, 3, 1, 3, tomorrowStr, "13:00", "Освітлення коренів", "pending", false)
+                ];
+
+                // Добавляем записи в историю посещений клиентов
+                this.appointments.filter(a => a.status === 'completed').forEach(appointment => {
+                    const client = this.clients.find(c => c.id === appointment.clientId);
+                    if (client) {
+                        const service = this.services.find(s => s.id === appointment.serviceId);
+                        const master = this.masters.find(m => m.id === appointment.masterId);
+                        
+                        if (service && master) {
+                            client.addVisit({
+                                date: appointment.date,
+                                time: appointment.time,
+                                service: service.name,
+                                master: master.name,
+                                price: service.price
+                            });
+                        }
+                    }
+                });
+            }
+
+            initEventListeners() {
+                // Навигация по страницам
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const pageId = item.getAttribute('data-page') + '-page';
+                        document.querySelectorAll('.page').forEach(page => {
+                            page.style.display = 'none';
+                        });
+                        document.getElementById(pageId).style.display = 'block';
+                        
+                        // Обновляем активный элемент в навигации
+                        document.querySelectorAll('.nav-item').forEach(navItem => {
+                            navItem.classList.remove('active');
+                        });
+                        item.classList.add('active');
+
+                        // Обновляем контент страницы
+                        switch(pageId) {
+                            case 'dashboard-page':
+                                this.renderDashboard();
+                                break;
+                            case 'clients-page':
+                                this.renderClients();
+                                break;
+                            case 'schedule-page':
+                                this.renderSchedule();
+                                break;
+                            case 'services-page':
+                                this.renderServices();
+                                break;
+                            case 'masters-page':
+                                this.renderMasters();
+                                break;
+                            case 'settings-page':
+                                this.renderSettings();
+                                break;
+                        }
                     });
-                })
-                .then(() => {
-                    errorElement.textContent = '';
-                    hideAuthMenu();
-                    loadUserData();
-                    updateAuthButton();
-                })
-                .catch((error) => {
-                    errorElement.textContent = error.message;
                 });
-        }
 
-        function logout() {
-            auth.signOut().then(() => {
-                currentUser = null;
-                categories = [];
-                recipes = [];
-                popularIngredients = [];
-                renderCategories();
-                updateAuthButton();
-                toggleVisibility('main-menu');
-            });
-        }
+                // Кнопки на dashboard
+                document.getElementById('new-appointment-btn').addEventListener('click', () => this.showAppointmentModal());
+                document.getElementById('new-client-btn').addEventListener('click', () => this.showClientModal());
+                document.getElementById('view-schedule-btn').addEventListener('click', () => {
+                    document.querySelector('.nav-item[data-page="schedule"]').click();
+                });
 
-        // 👤 Auth UI
-        function showAuthMenu() {
-            if (currentUser) {
-                logout();
-            } else {
-                document.getElementById('auth-menu').style.display = 'flex';
-                showLoginForm();
-            }
-        }
+                // Кнопки в других разделах
+                document.getElementById('add-client-btn').addEventListener('click', () => this.showClientModal());
+                document.getElementById('add-schedule-btn').addEventListener('click', () => this.showAppointmentModal());
+                document.getElementById('add-service-btn').addEventListener('click', () => this.showServiceModal());
+                document.getElementById('add-master-btn').addEventListener('click', () => this.showMasterModal());
 
-        function hideAuthMenu() {
-            document.getElementById('auth-menu').style.display = 'none';
-        }
+                // Поиск клиентов
+                document.getElementById('client-search').addEventListener('input', (e) => {
+                    this.renderClients(e.target.value);
+                });
 
-        function showLoginForm() {
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('register-form').style.display = 'none';
-            // Очищаем поля и ошибки
-            document.getElementById('login-email').value = '';
-            document.getElementById('login-password').value = '';
-            document.getElementById('login-error').textContent = '';
-        }
+                // Фильтры в расписании
+                document.getElementById('schedule-date').addEventListener('change', () => {
+                    this.renderSchedule();
+                });
+                document.getElementById('schedule-master').addEventListener('change', () => {
+                    this.renderSchedule();
+                });
 
-        function showRegisterForm() {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('register-form').style.display = 'block';
-            // Очищаем поля и ошибки
-            document.getElementById('register-name').value = '';
-            document.getElementById('register-email').value = '';
-            document.getElementById('register-password').value = '';
-            document.getElementById('register-confirm-password').value = '';
-            document.getElementById('register-error').textContent = '';
-        }
+                // Модальные окна
+                document.querySelectorAll('.close-btn, .close-modal-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.modal').forEach(modal => {
+                            modal.style.display = 'none';
+                        });
+                    });
+                });
 
-        function updateAuthButton() {
-            const authButton = document.getElementById('authButton');
-            authButton.textContent = currentUser ? 'Вийти' : 'Увійти';
-        }
+                // Сохранение клиента
+                document.getElementById('save-client-btn').addEventListener('click', () => {
+                    this.saveClient();
+                });
 
-        // 📝 Categories & Recipes
-        function renderCategories() {
-            const categoriesContainer = document.getElementById('categories');
-            categoriesContainer.innerHTML = '';
+                // Сохранение записи
+                document.getElementById('save-appointment-btn').addEventListener('click', () => {
+                    this.saveAppointment();
+                });
 
-            if (categories.length === 0) {
-                categoriesContainer.innerHTML = '<p>Ще немає категорій. Додайте першу!</p>';
-                return;
+                // Добавление нового клиента из формы записи
+                document.getElementById('add-new-client-from-appointment').addEventListener('click', () => {
+                    document.getElementById('appointment-modal').style.display = 'none';
+                    this.showClientModal();
+                });
+
+                // Инициализация даты в расписании
+                const todayInput = document.getElementById('schedule-date');
+                todayInput.value = this.formatDate(new Date());
+                todayInput.min = this.formatDate(new Date(new Date().setFullYear(new Date().getFullYear() - 1));
+                todayInput.max = this.formatDate(new Date(new Date().setFullYear(new Date().getFullYear() + 1)));
             }
 
-            categories.forEach((category, index) => {
-                const categoryElement = document.createElement('div');
-                categoryElement.className = 'category';
-                categoryElement.innerHTML = `
-                    <div class="category-header" onclick="toggleDishes(${index})">
-                        <div class="category-name">${category.name}</div>
-                        <div class="category-actions">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828911.png" class="action-icon" onclick="event.stopPropagation(); editCategory(${index})" alt="Edit" title="Редагувати">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png" class="action-icon" onclick="event.stopPropagation(); deleteCategory(${index})" alt="Delete" title="Видалити">
-                        </div>
-                    </div>
-                    <div class="dishes" id="dishes-${index}"></div>
-                `;
-                categoriesContainer.appendChild(categoryElement);
-            });
-        }
+            // Форматирование даты для input[type="date"]
+            formatDate(date) {
+                const d = new Date(date);
+                let month = '' + (d.getMonth() + 1);
+                let day = '' + d.getDate();
+                const year = d.getFullYear();
 
-        function renderDishes(index) {
-            const dishesContainer = document.getElementById(`dishes-${index}`);
-            const category = categories[index];
+                if (month.length < 2) month = '0' + month;
+                if (day.length < 2) day = '0' + day;
 
-            dishesContainer.innerHTML = `
-                <button class="btn add-dish-button" onclick="addDishToCategory(${index})">➕ Додати страву</button>
-            `;
-
-            if (!category.dishes || category.dishes.length === 0) {
-                dishesContainer.innerHTML += '<p>Немає страв у цій категорії</p>';
-                return;
+                return [year, month, day].join('-');
             }
 
-            category.dishes.forEach((dish, dishIndex) => {
-                const dishElement = document.createElement('div');
-                dishElement.className = 'dish';
-                dishElement.innerHTML = `
-                    <div class="dish-name" onclick="openRecipe('${dish}')">${dish}</div>
-                    <div class="dish-actions">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828911.png" class="action-icon" onclick="event.stopPropagation(); editDish(${index}, ${dishIndex})" alt="Edit" title="Редагувати">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png" class="action-icon" onclick="event.stopPropagation(); deleteDish(${index}, ${dishIndex})" alt="Delete" title="Видалити">
-                    </div>
-                `;
-                dishesContainer.appendChild(dishElement);
-            });
-        }
+            // Рендер dashboard
+            renderDashboard() {
+                const today = this.formatDate(new Date());
+                const todayAppointments = this.appointments.filter(a => a.date === today);
+                const completedToday = todayAppointments.filter(a => a.status === 'completed').length;
+                const incomeToday = todayAppointments
+                    .filter(a => a.status === 'completed')
+                    .reduce((sum, a) => {
+                        const service = this.services.find(s => s.id === a.serviceId);
+                        return sum + (service ? service.price : 0);
+                    }, 0);
 
-        function addCategory() {
-            const categoryName = prompt('Введіть назву категорії:');
-            if (categoryName) {
-                categories.push({ name: categoryName, dishes: [] });
-                saveCategories();
-                renderCategories();
+                // Обновляем статистику
+                document.getElementById('today-clients').textContent = completedToday;
+                document.getElementById('today-income').textContent = `${incomeToday} ₴`;
+                document.getElementById('today-appointments').textContent = todayAppointments.length;
+
+                // Находим самую популярную услугу
+                const popularService = this.getPopularService();
+                document.getElementById('popular-service').textContent = popularService ? popularService.name : 'Немає даних';
+
+                // Рендерим записи на сегодня
+                const tbody = document.querySelector('#today-appointments-table tbody');
+                tbody.innerHTML = '';
+
+                todayAppointments.forEach(appointment => {
+                    const client = this.clients.find(c => c.id === appointment.clientId);
+                    const master = this.masters.find(m => m.id === appointment.masterId);
+                    const service = this.services.find(s => s.id === appointment.serviceId);
+
+                    if (client && master && service) {
+                        const tr = document.createElement('tr');
+                        
+                        // Статус записи
+                        let statusClass = '';
+                        let statusText = '';
+                        switch(appointment.status) {
+                            case 'completed':
+                                statusClass = 'status-completed';
+                                statusText = 'Завершено';
+                                break;
+                            case 'no-show':
+                                statusClass = 'status-no-show';
+                                statusText = 'Не прийшов';
+                                break;
+                            default:
+                                statusClass = 'status-pending';
+                                statusText = 'Очікується';
+                        }
+
+                        // Статус оплаты
+                        const paidStatus = appointment.paid ? 'Сплачено' : 'Не сплачено';
+                        const paidClass = appointment.paid ? 'status-completed' : 'status-no-show';
+
+                        tr.innerHTML = `
+                            <td>${appointment.time}</td>
+                            <td>${client.name}</td>
+                            <td>${master.name}</td>
+                            <td>${service.name}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td><span class="status-badge ${paidClass}">${paidStatus}</span></td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm complete-btn" data-id="${appointment.id}">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm edit-btn" data-id="${appointment.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        `;
+
+                        tbody.appendChild(tr);
+                    }
+                });
+
+                // Добавляем обработчики для кнопок в таблице
+                document.querySelectorAll('.complete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const appointmentId = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.completeAppointment(appointmentId);
+                    });
+                });
+
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const appointmentId = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.editAppointment(appointmentId);
+                    });
+                });
             }
-        }
 
-        function editCategory(index) {
-            const newName = prompt('Нова назва категорії:', categories[index].name);
-            if (newName) {
-                categories[index].name = newName;
-                saveCategories();
-                renderCategories();
-            }
-        }
+            // Найти самую популярную услугу
+            getPopularService() {
+                if (this.appointments.length === 0) return null;
 
-        function deleteCategory(index) {
-            if (confirm('Ви впевнені, що хочете видалити категорію "' + categories[index].name + '"?')) {
-                categories.splice(index, 1);
-                saveCategories();
-                renderCategories();
-            }
-        }
+                const serviceCounts = {};
+                this.appointments.forEach(a => {
+                    if (a.status === 'completed') {
+                        serviceCounts[a.serviceId] = (serviceCounts[a.serviceId] || 0) + 1;
+                    }
+                });
 
-        function addDishToCategory(index) {
-            const dishName = prompt('Введіть назву страви:');
-            if (dishName) {
-                if (!categories[index].dishes) {
-                    categories[index].dishes = [];
+                let maxCount = 0;
+                let popularServiceId = null;
+
+                for (const [serviceId, count] of Object.entries(serviceCounts)) {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        popularServiceId = parseInt(serviceId);
+                    }
                 }
-                categories[index].dishes.push(dishName);
-                saveCategories();
-                renderDishes(index);
-            }
-        }
 
-        function editDish(categoryIndex, dishIndex) {
-            const newName = prompt('Нова назва страви:', categories[categoryIndex].dishes[dishIndex]);
-            if (newName) {
-                categories[categoryIndex].dishes[dishIndex] = newName;
-                saveCategories();
-                renderDishes(categoryIndex);
-            }
-        }
-
-        function deleteDish(categoryIndex, dishIndex) {
-            if (confirm('Ви впевнені, що хочете видалити страву "' + 
-                categories[categoryIndex].dishes[dishIndex] + '"?')) {
-                categories[categoryIndex].dishes.splice(dishIndex, 1);
-                saveCategories();
-                renderDishes(categoryIndex);
-            }
-        }
-
-        function openRecipe(dishName) {
-            currentDish = dishName;
-            document.getElementById('recipe-title').textContent = dishName;
-            toggleVisibility('recipe-menu');
-            loadRecipeIngredients();
-        }
-
-        function addIngredient() {
-            const name = document.getElementById('ingredient-name').value.trim();
-            const quantity = document.getElementById('ingredient-quantity').value.trim();
-            const description = document.getElementById('ingredient-description').value.trim();
-
-            if (!name || !quantity) {
-                alert('Будь ласка, заповніть назву і кількість інгредієнта!');
-                return;
+                return this.services.find(s => s.id === popularServiceId);
             }
 
-            let currentRecipe = recipes.find(recipe => recipe.name === currentDish);
-            if (!currentRecipe) {
-                currentRecipe = { name: currentDish, ingredients: [] };
-                recipes.push(currentRecipe);
+            // Рендер списка клиентов
+            renderClients(searchQuery = '') {
+                const tbody = document.querySelector('#clients-table tbody');
+                tbody.innerHTML = '';
+
+                let filteredClients = this.clients;
+                if (searchQuery) {
+                    const query = searchQuery.toLowerCase();
+                    filteredClients = this.clients.filter(client => 
+                        client.name.toLowerCase().includes(query) || 
+                        client.phone.includes(query)
+                    );
+                }
+
+                filteredClients.forEach(client => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${client.name}</td>
+                        <td>${client.phone}</td>
+                        <td>${client.instagram || '-'}</td>
+                        <td>${client.visits.length}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm view-client-btn" data-id="${client.id}">
+                                <i class="fas fa-eye"></i> Перегляд
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Добавляем обработчики для кнопок просмотра
+                document.querySelectorAll('.view-client-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const clientId = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.showClientInfo(clientId);
+                    });
+                });
             }
 
-            currentRecipe.ingredients.push({ name, quantity, description });
-            saveRecipes();
-            loadRecipeIngredients();
-            addPopularIngredient(name);
+            // Рендер расписания
+            renderSchedule() {
+                const dateFilter = document.getElementById('schedule-date').value;
+                const masterFilter = document.getElementById('schedule-master').value;
 
-            // Очистка полей
-            document.getElementById('ingredient-name').value = '';
-            document.getElementById('ingredient-quantity').value = '';
-            document.getElementById('ingredient-description').value = '';
-            
-            // Фокус на поле назвы
-            document.getElementById('ingredient-name').focus();
-        }
+                // Обновляем список мастеров в фильтре
+                const masterSelect = document.getElementById('schedule-master');
+                masterSelect.innerHTML = '<option value="all">Усі майстри</option>';
+                this.masters.forEach(master => {
+                    const option = document.createElement('option');
+                    option.value = master.id;
+                    option.textContent = master.name;
+                    masterSelect.appendChild(option);
+                });
+                if (masterFilter !== 'all') {
+                    masterSelect.value = masterFilter;
+                }
 
-        function loadRecipeIngredients() {
-            const currentRecipe = recipes.find(recipe => recipe.name === currentDish);
-            const ingredientsList = document.getElementById('ingredient-list');
+                // Фильтруем записи
+                let filteredAppointments = this.appointments;
+                if (dateFilter) {
+                    filteredAppointments = filteredAppointments.filter(a => a.date === dateFilter);
+                }
+                if (masterFilter && masterFilter !== 'all') {
+                    const masterId = parseInt(masterFilter);
+                    filteredAppointments = filteredAppointments.filter(a => a.masterId === masterId);
+                }
 
-            ingredientsList.innerHTML = '';
+                // Сортируем по времени
+                filteredAppointments.sort((a, b) => {
+                    if (a.time < b.time) return -1;
+                    if (a.time > b.time) return 1;
+                    return 0;
+                });
 
-            if (currentRecipe && currentRecipe.ingredients && currentRecipe.ingredients.length > 0) {
-                currentRecipe.ingredients.forEach((ingredient, index) => {
-                    const ingredientElement = document.createElement('div');
-                    ingredientElement.className = 'ingredient-item';
-                    ingredientElement.innerHTML = `
-                        <div class="ingredient-main">
-                            <div class="ingredient-text">${ingredient.name}: ${ingredient.quantity}</div>
-                            <div class="ingredient-actions">
-                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828911.png" class="action-icon" onclick="editIngredient(${index})" alt="Edit" title="Редагувати">
-                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png" class="action-icon" onclick="deleteIngredient(${index})" alt="Delete" title="Видалити">
+                // Рендерим таблицу
+                const tbody = document.querySelector('#schedule-table tbody');
+                tbody.innerHTML = '';
+
+                filteredAppointments.forEach(appointment => {
+                    const client = this.clients.find(c => c.id === appointment.clientId);
+                    const master = this.masters.find(m => m.id === appointment.masterId);
+                    const service = this.services.find(s => s.id === appointment.serviceId);
+
+                    if (client && master && service) {
+                        const tr = document.createElement('tr');
+                        
+                        // Статус записи
+                        let statusClass = '';
+                        let statusText = '';
+                        switch(appointment.status) {
+                            case 'completed':
+                                statusClass = 'status-completed';
+                                statusText = 'Завершено';
+                                break;
+                            case 'no-show':
+                                statusClass = 'status-no-show';
+                                statusText = 'Не прийшов';
+                                break;
+                            default:
+                                statusClass = 'status-pending';
+                                statusText = 'Очікується';
+                        }
+
+                        tr.innerHTML = `
+                            <td>${appointment.time}</td>
+                            <td>${client.name}</td>
+                            <td>${master.name}</td>
+                            <td>${service.name}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm complete-btn" data-id="${appointment.id}">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm edit-btn" data-id="${appointment.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        `;
+
+                        tbody.appendChild(tr);
+                    }
+                });
+
+                // Добавляем обработчики для кнопок в таблице
+                document.querySelectorAll('.complete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const appointmentId = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.completeAppointment(appointmentId);
+                    });
+                });
+
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const appointmentId = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.editAppointment(appointmentId);
+                    });
+                });
+            }
+
+            // Рендер списка услуг
+            renderServices() {
+                const tbody = document.querySelector('#services-table tbody');
+                tbody.innerHTML = '';
+
+                this.services.forEach(service => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${service.name}</td>
+                        <td>${service.duration} хв</td>
+                        <td>${service.price} ₴</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm edit-service-btn" data-id="${service.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Добавляем обработчики для кнопок редактирования
+                document.querySelectorAll('.edit-service-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const serviceId = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.editService(serviceId);
+                    });
+                });
+            }
+
+            // Рендер списка мастеров
+            renderMasters() {
+                const tbody = document.querySelector('#masters-table tbody');
+                tbody.innerHTML = '';
+
+                this.masters.forEach(master => {
+                    const tr = document.createElement('tr');
+                    const masterServices = master.services.map(sId => {
+                        const service = this.services.find(s => s.id === sId);
+                        return service ? service.name : '';
+                    }).filter(name => name !== '').join(', ');
+
+                    tr.innerHTML = `
+                        <td>${master.name}</td>
+                        <td>${masterServices}</td>
+                        <td>Пн-Пт: 9:00-20:00</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm edit-master-btn" data-id="${master.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Добавляем обработчики для кнопок редактирования
+                document.querySelectorAll('.edit-master-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const masterId = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.editMaster(masterId);
+                    });
+                });
+            }
+
+            // Рендер настроек
+            renderSettings() {
+                document.getElementById('business-name').value = this.settings.businessName;
+                document.getElementById('business-phone').value = this.settings.businessPhone;
+
+                const workingHoursContainer = document.getElementById('working-hours');
+                workingHoursContainer.innerHTML = '';
+
+                const days = [
+                    { id: 'monday', name: 'Понеділок' },
+                    { id: 'tuesday', name: 'Вівторок' },
+                    { id: 'wednesday', name: 'Середа' },
+                    { id: 'thursday', name: 'Четвер' },
+                    { id: 'friday', name: 'П\'ятниця' },
+                    { id: 'saturday', name: 'Субота' },
+                    { id: 'sunday', name: 'Неділя' }
+                ];
+
+                days.forEach(day => {
+                    const dayHours = this.settings.workingHours[day.id];
+                    const div = document.createElement('div');
+                    div.className = 'form-row';
+                    div.innerHTML = `
+                        <div class="form-group">
+                            <label>${day.name}</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="time" id="${day.id}-from" value="${dayHours.from}" style="flex: 1;">
+                                <span>до</span>
+                                <input type="time" id="${day.id}-to" value="${dayHours.to}" style="flex: 1;">
                             </div>
                         </div>
-                        ${ingredient.description ? `<div class="ingredient-description">${ingredient.description}</div>` : ''}
                     `;
-                    ingredientsList.appendChild(ingredientElement);
+                    workingHoursContainer.appendChild(div);
                 });
-            } else {
-                ingredientsList.innerHTML = '<p>Ще немає інгредієнтів для цієї страви.</p>';
+
+                // Обработчик сохранения настроек
+                document.getElementById('save-settings-btn').addEventListener('click', () => {
+                    this.saveSettings();
+                });
             }
-        }
 
-        function editIngredient(index) {
-            const currentRecipe = recipes.find(recipe => recipe.name === currentDish);
-            if (!currentRecipe || !currentRecipe.ingredients || index >= currentRecipe.ingredients.length) return;
+            // Показать модальное окно клиента
+            showClientModal(clientId = null) {
+                const modal = document.getElementById('client-modal');
+                const title = document.getElementById('client-modal-title');
+                const form = modal.querySelector('.modal-body');
 
-            const ingredient = currentRecipe.ingredients[index];
-            const newName = prompt('Назва інгредієнта:', ingredient.name);
-            if (newName === null) return;
-            
-            const newQuantity = prompt('Кількість:', ingredient.quantity);
-            if (newQuantity === null) return;
-            
-            const newDescription = prompt('Опис:', ingredient.description || '');
-
-            currentRecipe.ingredients[index] = {
-                name: newName.trim(),
-                quantity: newQuantity.trim(),
-                description: newDescription ? newDescription.trim() : ''
-            };
-            
-            saveRecipes();
-            loadRecipeIngredients();
-            
-            // Обновляем популярные ингредиенты, если имя изменилось
-            if (newName.trim().toLowerCase() !== ingredient.name.toLowerCase()) {
-                updatePopularIngredients(ingredient.name, newName.trim());
-            }
-        }
-
-        function deleteIngredient(index) {
-            const currentRecipe = recipes.find(recipe => recipe.name === currentDish);
-            if (!currentRecipe || !currentRecipe.ingredients || index >= currentRecipe.ingredients.length) return;
-
-            if (confirm('Видалити цей інгредієнт?')) {
-                currentRecipe.ingredients.splice(index, 1);
-                saveRecipes();
-                loadRecipeIngredients();
-            }
-        }
-
-        // 🔍 Search Functionality
-        function renderPopularIngredients() {
-            const ingredientTags = document.getElementById('ingredient-tags');
-            ingredientTags.innerHTML = '';
-            
-            if (popularIngredients.length === 0) {
-                ingredientTags.innerHTML = '<p>Ще немає популярних інгредієнтів. Додайте інгредієнти до страв!</p>';
-                return;
-            }
-            
-            // Сортируем по популярности (по количеству упоминаний)
-            const sortedIngredients = [...popularIngredients].sort((a, b) => {
-                const countA = recipes.reduce((count, recipe) => 
-                    count + (recipe.ingredients?.some(ing => ing.name.toLowerCase() === a.toLowerCase()) ? 1 : 0, 0);
-                const countB = recipes.reduce((count, recipe) => 
-                    count + (recipe.ingredients?.some(ing => ing.name.toLowerCase() === b.toLowerCase()) ? 1 : 0, 0);
-                return countB - countA;
-            });
-
-            sortedIngredients.forEach(ingredient => {
-                const ingredientElement = document.createElement('div');
-                ingredientElement.className = 'ingredient-tag';
-                if (selectedIngredients.includes(ingredient)) {
-                    ingredientElement.classList.add('selected');
+                if (clientId) {
+                    // Режим редактирования
+                    const client = this.clients.find(c => c.id === clientId);
+                    if (client) {
+                        title.textContent = 'Редагувати клієнта';
+                        document.getElementById('client-name').value = client.name;
+                        document.getElementById('client-phone').value = client.phone;
+                        document.getElementById('client-instagram').value = client.instagram;
+                        document.getElementById('client-notes').value = client.notes;
+                        
+                        // Сохраняем ID клиента в кнопке сохранения
+                        document.getElementById('save-client-btn').setAttribute('data-id', clientId);
+                    }
+                } else {
+                    // Режим добавления
+                    title.textContent = 'Додати нового клієнта';
+                    form.reset();
+                    document.getElementById('save-client-btn').removeAttribute('data-id');
                 }
-                ingredientElement.textContent = ingredient;
-                ingredientElement.onclick = () => toggleIngredientSelection(ingredientElement, ingredient);
-                ingredientTags.appendChild(ingredientElement);
-            });
-        }
 
-        function toggleIngredientSelection(element, ingredient) {
-            const index = selectedIngredients.indexOf(ingredient);
-            if (index > -1) {
-                selectedIngredients.splice(index, 1);
-                element.classList.remove('selected');
-            } else {
-                selectedIngredients.push(ingredient);
-                element.classList.add('selected');
-            }
-            searchRecipes();
-        }
-
-        function searchRecipes() {
-            if (selectedIngredients.length === 0) {
-                document.getElementById('only-ingredients-list').innerHTML = '<p>Оберіть інгредієнти для пошуку</p>';
-                document.getElementById('other-ingredients-list').innerHTML = '';
-                return;
+                modal.style.display = 'flex';
             }
 
-            const normalizedIngredients = selectedIngredients.map(ingredient => 
-                ingredient.toLowerCase().trim()
-            );
+            // Показать модальное окно записи
+            showAppointmentModal(appointmentId = null) {
+                const modal = document.getElementById('appointment-modal');
+                const clientSelect = document.getElementById('appointment-client');
+                const masterSelect = document.getElementById('appointment-master');
+                const serviceSelect = document.getElementById('appointment-service');
 
-            const onlyIngredientsResults = recipes.filter(recipe =>
-                recipe.ingredients &&
-                normalizedIngredients.every(ingredient =>
-                    recipe.ingredients.some(item => 
-                        item.name.toLowerCase().includes(ingredient)
-                    )
-                ) && 
-                recipe.ingredients.length === normalizedIngredients.length
-            );
+                // Заполняем выпадающие списки
+                clientSelect.innerHTML = '<option value="">Оберіть клієнта</option>';
+                this.clients.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    option.textContent = client.name;
+                    clientSelect.appendChild(option);
+                });
 
-            const otherIngredientsResults = recipes.filter(recipe =>
-                recipe.ingredients &&
-                normalizedIngredients.every(ingredient =>
-                    recipe.ingredients.some(item => 
-                        item.name.toLowerCase().includes(ingredient)
-                    )
-                ) && 
-                recipe.ingredients.length > normalizedIngredients.length
-            );
+                masterSelect.innerHTML = '<option value="">Оберіть майстра</option>';
+                this.masters.forEach(master => {
+                    const option = document.createElement('option');
+                    option.value = master.id;
+                    option.textContent = master.name;
+                    masterSelect.appendChild(option);
+                });
 
-            renderSearchResults(onlyIngredientsResults, 'only-ingredients-list');
-            renderSearchResults(otherIngredientsResults, 'other-ingredients-list');
-        }
+                serviceSelect.innerHTML = '<option value="">Оберіть послугу</option>';
+                this.services.forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service.id;
+                    option.textContent = `${service.name} (${service.duration} хв, ${service.price} ₴)`;
+                    serviceSelect.appendChild(option);
+                });
 
-        function renderSearchResults(results, containerId) {
-            const resultsContainer = document.getElementById(containerId);
-            
-            if (results.length === 0) {
-                resultsContainer.innerHTML = '<p>Нічого не знайдено</p>';
-                return;
+                if (appointmentId) {
+                    // Режим редактирования
+                    const appointment = this.appointments.find(a => a.id === appointmentId);
+                    if (appointment) {
+                        document.getElementById('appointment-client').value = appointment.clientId;
+                        document.getElementById('appointment-date').value = appointment.date;
+                        document.getElementById('appointment-time').value = appointment.time;
+                        document.getElementById('appointment-master').value = appointment.masterId;
+                        document.getElementById('appointment-service').value = appointment.serviceId;
+                        document.getElementById('appointment-notes').value = appointment.notes;
+                        
+                        // Сохраняем ID записи в кнопке сохранения
+                        document.getElementById('save-appointment-btn').setAttribute('data-id', appointmentId);
+                    }
+                } else {
+                    // Режим добавления
+                    const form = modal.querySelector('.modal-body');
+                    form.reset();
+                    document.getElementById('appointment-date').value = this.formatDate(new Date());
+                    document.getElementById('save-appointment-btn').removeAttribute('data-id');
+                }
+
+                modal.style.display = 'flex';
             }
-            
-            resultsContainer.innerHTML = results.map(recipe => `
-                <div class="search-result-item" onclick="openRecipe('${recipe.name}')">
-                    ${recipe.name}
-                    <div style="font-size: 0.8em; color: ${'#666'}">
-                        ${recipe.ingredients?.map(ing => ing.name).join(', ')}
-                    </div>
-                </div>
-            `).join('');
-        }
 
-        function addPopularIngredient(name) {
-            name = name.trim().toLowerCase();
-            
-            // Проверяем, есть ли уже такой ингредиент (без учета регистра)
-            const existingIndex = popularIngredients.findIndex(
-                ing => ing.toLowerCase() === name
-            );
-            
-            if (existingIndex === -1) {
-                // Добавляем с правильным регистром первого символа
-                const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
-                popularIngredients.push(formattedName);
-                savePopularIngredients();
-                renderPopularIngredients();
+            // Показать информацию о клиенте
+            showClientInfo(clientId) {
+                const client = this.clients.find(c => c.id === clientId);
+                if (!client) return;
+
+                const modal = document.getElementById('client-info-modal');
+                const title = document.getElementById('client-info-title');
+                const avatar = document.getElementById('client-avatar');
+                const name = document.getElementById('client-info-name');
+                const phone = document.getElementById('client-info-phone');
+                const instagram = document.getElementById('client-info-instagram');
+                const notes = document.getElementById('client-info-notes');
+                const visitsTable = document.querySelector('#client-visits-table tbody');
+
+                // Заполняем информацию
+                title.textContent = `Клієнт: ${client.name}`;
+                avatar.textContent = client.name.split(' ').map(n => n[0]).join('');
+                name.textContent = client.name;
+                phone.textContent = client.phone;
+                instagram.textContent = client.instagram || 'Не вказано';
+                notes.textContent = client.notes || 'Приміток немає';
+
+                // Заполняем историю посещений
+                visitsTable.innerHTML = '';
+                client.visits.forEach(visit => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${visit.date} ${visit.time}</td>
+                        <td>${visit.master}</td>
+                        <td>${visit.service}</td>
+                        <td>${visit.price} ₴</td>
+                    `;
+                    visitsTable.appendChild(tr);
+                });
+
+                // Сохраняем ID клиента в кнопке редактирования
+                document.getElementById('edit-client-btn').setAttribute('data-id', clientId);
+
+                modal.style.display = 'flex';
             }
-        }
 
-        function updatePopularIngredients(oldName, newName) {
-            oldName = oldName.trim().toLowerCase();
-            newName = newName.trim().toLowerCase();
-            
-            if (oldName === newName) return;
-            
-            // Находим индекс старого имени (без учета регистра)
-            const existingIndex = popularIngredients.findIndex(
-                ing => ing.toLowerCase() === oldName
-            );
-            
-            if (existingIndex !== -1) {
-                // Проверяем, есть ли уже новое имя
-                const newNameExists = popularIngredients.some(
-                    ing => ing.toLowerCase() === newName
+            // Сохранить клиента
+            saveClient() {
+                const name = document.getElementById('client-name').value.trim();
+                const phone = document.getElementById('client-phone').value.trim();
+                const instagram = document.getElementById('client-instagram').value.trim();
+                const notes = document.getElementById('client-notes').value.trim();
+                const clientId = document.getElementById('save-client-btn').getAttribute('data-id');
+
+                if (!name || !phone) {
+                    alert('Будь ласка, заповніть обов\'язкові поля (Ім\'я та Телефон)');
+                    return;
+                }
+
+                if (clientId) {
+                    // Редактирование существующего клиента
+                    const client = this.clients.find(c => c.id === parseInt(clientId));
+                    if (client) {
+                        client.name = name;
+                        client.phone = phone;
+                        client.instagram = instagram;
+                        client.notes = notes;
+                    }
+                } else {
+                    // Добавление нового клиента
+                    const newId = this.clients.length > 0 ? Math.max(...this.clients.map(c => c.id)) + 1 : 1;
+                    const newClient = new Client(newId, name, phone, instagram, notes);
+                    this.clients.push(newClient);
+                }
+
+                // Закрываем модальное окно и обновляем данные
+                document.getElementById('client-modal').style.display = 'none';
+                this.renderClients();
+                if (document.getElementById('clients-page').style.display !== 'none') {
+                    this.renderClients();
+                } else {
+                    this.renderDashboard();
+                }
+            }
+
+            // Сохранить запись
+            saveAppointment() {
+                const clientId = parseInt(document.getElementById('appointment-client').value);
+                const date = document.getElementById('appointment-date').value;
+                const time = document.getElementById('appointment-time').value;
+                const masterId = parseInt(document.getElementById('appointment-master').value);
+                const serviceId = parseInt(document.getElementById('appointment-service').value);
+                const notes = document.getElementById('appointment-notes').value.trim();
+                const appointmentId = document.getElementById('save-appointment-btn').getAttribute('data-id');
+
+                if (!clientId || !date || !time || !masterId || !serviceId) {
+                    alert('Будь ласка, заповніть всі обов\'язкові поля');
+                    return;
+                }
+
+                // Проверяем, свободен ли мастер в это время
+                const isTimeAvailable = this.checkMasterAvailability(masterId, date, time, appointmentId ? parseInt(appointmentId) : null);
+                if (!isTimeAvailable) {
+                    alert('Майстер вже має запис на цей час. Будь ласка, оберіть інший час або майстра.');
+                    return;
+                }
+
+                if (appointmentId) {
+                    // Редактирование существующей записи
+                    const appointment = this.appointments.find(a => a.id === parseInt(appointmentId));
+                    if (appointment) {
+                        appointment.clientId = clientId;
+                        appointment.date = date;
+                        appointment.time = time;
+                        appointment.masterId = masterId;
+                        appointment.serviceId = serviceId;
+                        appointment.notes = notes;
+                    }
+                } else {
+                    // Добавление новой записи
+                    const newId = this.appointments.length > 0 ? Math.max(...this.appointments.map(a => a.id)) + 1 : 1;
+                    const newAppointment = new Appointment(
+                        newId, 
+                        clientId, 
+                        masterId, 
+                        serviceId, 
+                        date, 
+                        time, 
+                        notes
+                    );
+                    this.appointments.push(newAppointment);
+                }
+
+                // Закрываем модальное окно и обновляем данные
+                document.getElementById('appointment-modal').style.display = 'none';
+                this.renderDashboard();
+                if (document.getElementById('schedule-page').style.display !== 'none') {
+                    this.renderSchedule();
+                }
+            }
+
+            // Проверить доступность мастера
+            checkMasterAvailability(masterId, date, time, excludeAppointmentId = null) {
+                const appointments = this.appointments.filter(a => 
+                    a.masterId === masterId && 
+                    a.date === date &&
+                    (excludeAppointmentId ? a.id !== excludeAppointmentId : true)
                 );
-                
-                if (!newNameExists) {
-                    // Заменяем старое имя на новое
-                    popularIngredients[existingIndex] = newName.charAt(0).toUpperCase() + newName.slice(1);
-                    savePopularIngredients();
-                    renderPopularIngredients();
-                } else {
-                    // Удаляем старое имя, так как новое уже есть
-                    popularIngredients.splice(existingIndex, 1);
-                    savePopularIngredients();
-                    renderPopularIngredients();
+
+                const selectedTime = new Date(`${date}T${time}`);
+                const selectedEndTime = new Date(selectedTime.getTime() + 30 * 60000); // Добавляем 30 минут для проверки
+
+                for (const appointment of appointments) {
+                    const appointmentTime = new Date(`${appointment.date}T${appointment.time}`);
+                    const service = this.services.find(s => s.id === appointment.serviceId);
+                    const appointmentEndTime = new Date(appointmentTime.getTime() + (service ? service.duration * 60000 : 30 * 60000));
+
+                    if (
+                        (selectedTime >= appointmentTime && selectedTime < appointmentEndTime) ||
+                        (selectedEndTime > appointmentTime && selectedEndTime <= appointmentEndTime) ||
+                        (selectedTime <= appointmentTime && selectedEndTime >= appointmentEndTime)
+                    ) {
+                        return false; // Время занято
+                    }
                 }
+
+                return true; // Время свободно
+            }
+
+            // Завершить запись
+            completeAppointment(appointmentId) {
+                const appointment = this.appointments.find(a => a.id === appointmentId);
+                if (appointment) {
+                    appointment.status = 'completed';
+                    appointment.paid = true;
+                    
+                    // Добавляем запись в историю клиента
+                    const client = this.clients.find(c => c.id === appointment.clientId);
+                    const service = this.services.find(s => s.id === appointment.serviceId);
+                    const master = this.masters.find(m => m.id === appointment.masterId);
+                    
+                    if (client && service && master) {
+                        client.addVisit({
+                            date: appointment.date,
+                            time: appointment.time,
+                            service: service.name,
+                            master: master.name,
+                            price: service.price
+                        });
+                    }
+
+                    // Обновляем интерфейс
+                    if (document.getElementById('dashboard-page').style.display !== 'none') {
+                        this.renderDashboard();
+                    }
+                    if (document.getElementById('schedule-page').style.display !== 'none') {
+                        this.renderSchedule();
+                    }
+                }
+            }
+
+            // Редактировать запись
+            editAppointment(appointmentId) {
+                this.showAppointmentModal(appointmentId);
+            }
+
+            // Редактировать услугу
+            editService(serviceId) {
+                // В реальном приложении здесь была бы реализация редактирования услуги
+                alert(`Редагування послуги з ID: ${serviceId}`);
+            }
+
+            // Редактировать мастера
+            editMaster(masterId) {
+                // В реальном приложении здесь была бы реализация редактирования мастера
+                alert(`Редагування майстра з ID: ${masterId}`);
+            }
+
+            // Сохранить настройки
+            saveSettings() {
+                const businessName = document.getElementById('business-name').value.trim();
+                const businessPhone = document.getElementById('business-phone').value.trim();
+
+                if (!businessName || !businessPhone) {
+                    alert('Будь ласка, заповніть обов\'язкові поля');
+                    return;
+                }
+
+                // Сохраняем основные настройки
+                this.settings.businessName = businessName;
+                this.settings.businessPhone = businessPhone;
+
+                // Сохраняем рабочие часы
+                const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                days.forEach(day => {
+                    this.settings.workingHours[day] = {
+                        from: document.getElementById(`${day}-from`).value,
+                        to: document.getElementById(`${day}-to`).value
+                    };
+                });
+
+                alert('Налаштування успішно збережено');
             }
         }
 
-        // 🏠 Navigation
-        function toggleVisibility(targetId) {
-            const sections = ['main-menu', 'add-menu', 'category-menu', 'recipe-menu', 'search-menu', 'auth-menu'];
-            sections.forEach(sectionId => {
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    section.style.display = sectionId === targetId ? 'block' : 'none';
-                }
-            });
-        }
-
-        function goBack() {
-            toggleVisibility('main-menu');
-        }
-
-        function toggleSearchMenu() {
-            toggleVisibility('search-menu');
-            // Очищаем поиск при открытии
-            selectedIngredients = [];
-            const tags = document.querySelectorAll('.ingredient-tag');
-            tags.forEach(tag => tag.classList.remove('selected'));
-            document.getElementById('only-ingredients-list').innerHTML = '';
-            document.getElementById('other-ingredients-list').innerHTML = '';
-        }
-
-        function toggleDishes(index) {
-            const container = document.getElementById(`dishes-${index}`);
-            if (container.style.display === 'none' || !container.style.display) {
-                renderDishes(index);
-                container.style.display = 'block';
-            } else {
-                container.style.display = 'none';
-            }
-        }
-
-        // 🚀 Initialize App
+        // Инициализация CRM при загрузке страницы
         document.addEventListener('DOMContentLoaded', () => {
-            // Check Auth State
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    currentUser = user;
-                    loadUserData();
-                    updateAuthButton();
-                } else {
-                    currentUser = null;
-                    updateAuthButton();
-                    toggleVisibility('main-menu');
-                }
-            });
-
-            // Setup Search Button
-            const searchIcon = document.getElementById("searchIcon");
-            if (searchIcon) {
-                searchIcon.addEventListener("click", toggleSearchMenu);
-            }
-            
-            // Загружаем иконки для кнопок, если они еще не загружены
-            loadIcons();
+            const beautyCRM = new BeautyCRM();
         });
-        
-        function loadIcons() {
-            // Эта функция просто обеспечивает, чтобы иконки были доступны
-            // В реальном приложении вы можете предзагрузить их или использовать встроенные SVG
-        }
     </script>
 </body>
 </html>
